@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.venv/
+venv/
+
+# Local config and secrets
+.env
+.env.*
+.streamlit/secrets.toml
+
+# Local databases and outputs
+*.db
+tailorednote_output.txt
+note_output.txt
+
+# Build artifacts
+build/
+dist/
+*.spec
+
+# IDE/system files
+.vscode/
+.DS_Store
+Thumbs.db
