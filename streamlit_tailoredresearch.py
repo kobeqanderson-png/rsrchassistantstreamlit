@@ -20,6 +20,12 @@ def _build_word_export(result: dict, note_name: str, research_focus: str, source
     doc.add_paragraph(f"Limit: {limit}")
     doc.add_paragraph(f"Timestamp: {result.get('timestamp', 'N/A')}")
 
+    queries_used = result.get("queries_used", {})
+    if queries_used:
+        doc.add_heading("Queries sent to each source", level=2)
+        for src, q in queries_used.items():
+            doc.add_paragraph(f"{src}: {q}")
+
     doc.add_heading("Summary", level=1)
     doc.add_paragraph(f"Papers found: {result.get('papers_found', 0)}")
     doc.add_paragraph("Sources queried: " + ", ".join(result.get("sources_queried", [])))
@@ -215,9 +221,16 @@ with left_col:
         )
         source = st.selectbox(
             "Data source",
-            options=["both", "europe_pmc", "openalex", "pubmed"],
+            options=["all", "pubmed", "europe_pmc", "openalex", "both"],
             index=0,
-            help="Use both to query Europe PMC and OpenAlex in one run.",
+            format_func=lambda s: {
+                "all": "All sources (PubMed + Europe PMC + OpenAlex)",
+                "pubmed": "PubMed",
+                "europe_pmc": "Europe PMC",
+                "openalex": "OpenAlex",
+                "both": "Europe PMC + OpenAlex",
+            }.get(s, s),
+            help="'All' queries every source. Individual options narrow the search.",
         )
         limit = st.slider("Max papers", min_value=1, max_value=20, value=6)
         submitted = st.form_submit_button("Run research")
@@ -230,7 +243,18 @@ with right_col:
           <span class="rh-badge pubmed">pubmed</span>
           <span class="rh-badge europe_pmc">europe_pmc</span>
           <span class="rh-badge openalex">openalex</span>
-          <p class="rh-meta" style="margin-top:0.7rem;">Use the selector to query one source or combine multiple in one run.</p>
+          <p class="rh-meta" style="margin-top:0.7rem;">
+            Select <strong>All sources</strong> to query all three in one run,
+            or pick a single source to narrow the search.
+          </p>
+        </div>
+        <div class="rh-card">
+          <p class="rh-meta" style="margin:0;">
+            <strong>Search tip:</strong> You can enter a plain description
+            (<em>"lipid nanoparticle mRNA delivery cancer"</em>) or a full sentence —
+            the app automatically extracts key terms and builds optimized Boolean
+            queries for each source.
+          </p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -260,6 +284,13 @@ if submitted:
                 st.metric("Sources", len(result.get("sources_queried", [])))
 
             st.write("Sources queried: " + ", ".join(result.get("sources_queried", [])))
+
+            queries_used = result.get("queries_used", {})
+            if queries_used:
+                with st.expander("Queries sent to each source"):
+                    for src, q in queries_used.items():
+                        st.markdown(f"**{src}**")
+                        st.code(q, language="text")
 
             export_bytes = _build_word_export(
                 result=result,
