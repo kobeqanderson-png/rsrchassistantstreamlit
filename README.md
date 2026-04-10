@@ -6,6 +6,8 @@ plain language search.
 
 **[Try the live app →](https://rsrchfinder.streamlit.app/)**
 
+![Research Hub Screenshot](webscreem.png)
+
 ---
 
 ## The Problem
